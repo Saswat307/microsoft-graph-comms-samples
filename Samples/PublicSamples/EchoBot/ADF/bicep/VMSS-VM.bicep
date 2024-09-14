@@ -159,15 +159,7 @@ resource VMSS 'Microsoft.Compute/virtualMachineScaleSets@2021-07-01' = {
     tier: 'Standard'
     capacity: AppServer.AutoScalecapacity.minimum
   }
-  zones: contains(AppServer, 'zones') ? AppServer.zones : [
-    '1'
-    '2'
-    '3'
-  ]
   properties: {
-    zoneBalance: true
-    overprovision: false
-    singlePlacementGroup: true
     upgradePolicy: {
       mode: 'Automatic'
       automaticOSUpgradePolicy: {
@@ -175,8 +167,6 @@ resource VMSS 'Microsoft.Compute/virtualMachineScaleSets@2021-07-01' = {
       }
     }
     virtualMachineProfile: {
-      priority: 'Spot'
-      evictionPolicy: 'Deallocate'
       licenseType: contains(OSType[AppServer.OSType], 'licenseType') ? OSType[AppServer.OSType].licenseType : null
       osProfile: {
         computerNamePrefix: VM.vmHostName

@@ -70,6 +70,23 @@
             "FlowAnalyticsEnabled": true,
             "securityRules": [
               {
+                "name": "AllowAnyCustom3389Inbound",
+                "properties": {
+                  "protocol": "TCP",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "3389",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "VirtualNetwork",
+                  "access": "Allow",
+                  "priority": 140,
+                  "direction": "Inbound",
+                  "sourcePortRanges": [],
+                  "destinationPortRanges": [],
+                  "sourceAddressPrefixes": [],
+                  "destinationAddressPrefixes": []
+                }
+              },
+              {
                 "name": "CALL_SIGNALING",
                 "properties": {
                   "protocol": "TCP",

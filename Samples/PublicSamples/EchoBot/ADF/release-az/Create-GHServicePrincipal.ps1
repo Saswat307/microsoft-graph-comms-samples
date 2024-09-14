@@ -104,7 +104,7 @@ if ($CurrentUserStorageAccess)
 {
     # Add storage permissions for current user
     $CurrentUserId = Get-AzContext | ForEach-Object account | ForEach-Object Id
-    if (! (Get-AzRoleAssignment -Scope $storageId -SignInName $CurrentUserId -RoleDefinitionName $StorageRole -Verbose))
+    if (! (Get-AzRoleAssignment -Scope $storageId -RoleDefinitionName $StorageRole -Verbose))
     {
         New-AzRoleAssignment -Scope $storageId -SignInName $CurrentUserId -RoleDefinitionName $StorageRole -Verbose
     }

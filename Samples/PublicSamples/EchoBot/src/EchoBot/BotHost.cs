@@ -16,6 +16,9 @@ using EchoBot.Bot;
 using EchoBot.Util;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Graph.Communications.Common.Telemetry;
 
 namespace EchoBot
@@ -71,6 +74,15 @@ namespace EchoBot
                 .BindConfiguration(nameof(AppSettings))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+
+            // Create the Bot Framework Authentication to be used with the Bot Adapter.
+            builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();
+
+            // Create the Bot Adapter with error handling enabled.
+            builder.Services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
+
+            // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
+            builder.Services.AddTransient<IBot, Bots.TextBot>();
 
             builder.Services.AddSingleton<IGraphLogger, GraphLogger>(_ => new GraphLogger("EchoBotWorker", redirectToTrace: true));
             builder.Services.AddSingleton<IBotMediaLogger, BotMediaLogger>();

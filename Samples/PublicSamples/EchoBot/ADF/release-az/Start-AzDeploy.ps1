@@ -302,7 +302,9 @@ Function global:AzDeploy
             }
             else 
             {
+                Write-Host "Starting deployment with parameters: Common = $Common, TemplateArgs = $TemplateArgs, OptionalParameters = $OptionalParameters"
                 $global:r = New-AzDeployment @Common @TemplateArgs @OptionalParameters
+                Write-Host "Deployment result: $global:r"
             }
         }
 
