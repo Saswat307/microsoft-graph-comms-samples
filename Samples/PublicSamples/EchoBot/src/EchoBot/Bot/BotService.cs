@@ -28,6 +28,7 @@ using System.Net;
 using EchoBot.Util;
 using Microsoft.Graph.Models;
 using Microsoft.Graph.Contracts;
+using API.Services.Interfaces;
 
 namespace EchoBot.Bot
 {
@@ -72,6 +73,7 @@ namespace EchoBot.Bot
         /// <value>The client.</value>
         public ICommunicationsClient Client { get; private set; }
 
+        public IOpenAIService _openAIService { get; }
 
         /// <summary>
         /// Dispose of the call client
@@ -93,8 +95,10 @@ namespace EchoBot.Bot
             IGraphLogger graphLogger,
             ILogger<BotService> logger,
             IOptions<AppSettings> settings,
-            IBotMediaLogger mediaLogger)
+            IBotMediaLogger mediaLogger,
+            IOpenAIService openAIService)
         {
+            _openAIService = openAIService;
             _graphLogger = graphLogger;
             _logger = logger;
             _settings = settings.Value;
@@ -318,7 +322,7 @@ namespace EchoBot.Bot
         {
             foreach (var call in args.AddedResources)
             {
-                var callHandler = new CallHandler(call, _settings, _logger);
+                var callHandler = new CallHandler(call, _settings, _logger, _openAIService);
                 var threadId = call.Resource.ChatInfo.ThreadId;
                 this.CallHandlers[threadId] = callHandler;
             }

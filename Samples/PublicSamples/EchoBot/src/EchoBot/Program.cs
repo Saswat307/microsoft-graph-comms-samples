@@ -4,10 +4,6 @@ using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.EventLog;
 
 IHost host = Host.CreateDefaultBuilder(args)
-/*    .ConfigureWebHostDefaults(webBuilder =>
-    {
-        webBuilder.UseStartup<Startup>();
-    })*/
     .UseWindowsService(options =>
     {
         options.ServiceName = "Echo Bot Service";
@@ -20,7 +16,6 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IBotHost, BotHost>();
 
         services.AddHostedService<EchoBotWorker>();
-
     })
     .Build();
 

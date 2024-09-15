@@ -1,4 +1,5 @@
-﻿using EchoBot.Util;
+﻿using API.Services.Interfaces;
+using EchoBot.Util;
 using Microsoft.Graph;
 using Microsoft.Graph.Communications.Calls;
 using Microsoft.Graph.Communications.Calls.Media;
@@ -35,7 +36,8 @@ namespace EchoBot.Bot
         public CallHandler(
             ICall statefulCall,
             AppSettings settings,
-            ILogger logger
+            ILogger logger,
+            IOpenAIService openAIService
         )
             : base(TimeSpan.FromMinutes(10), statefulCall?.GraphLogger)
         {
@@ -43,7 +45,7 @@ namespace EchoBot.Bot
             this.Call.OnUpdated += this.CallOnUpdated;
             this.Call.Participants.OnUpdated += this.ParticipantsOnUpdated;
 
-            this.BotMediaStream = new BotMediaStream(this.Call.GetLocalMediaSession(), this.Call.Id, this.GraphLogger, logger, settings);
+            this.BotMediaStream = new BotMediaStream(this.Call.GetLocalMediaSession(), this.Call.Id, this.GraphLogger, logger, settings, openAIService);
         }
 
         /// <inheritdoc/>

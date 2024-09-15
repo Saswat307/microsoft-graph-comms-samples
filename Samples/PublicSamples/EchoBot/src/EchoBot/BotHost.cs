@@ -20,6 +20,8 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Graph.Communications.Common.Telemetry;
+using API.Services.Interfaces;
+using API.Services;
 
 namespace EchoBot
 {
@@ -92,6 +94,7 @@ namespace EchoBot
             builder.Logging.AddEventLog(config => config.SourceName = "Echo Bot Service");
 
             builder.Services.AddSingleton<IBotService, BotService>();
+            builder.Services.AddSingleton<IOpenAIService, OpenAIService>();
 
             // Bot Settings Setup
             var botInternalHostingProtocol = "https";

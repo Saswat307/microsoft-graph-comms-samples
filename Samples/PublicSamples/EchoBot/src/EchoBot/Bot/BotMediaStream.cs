@@ -12,6 +12,7 @@
 // </copyright>
 // <summary>The bot media stream.</summary>
 // ***********************************************************************-
+using API.Services.Interfaces;
 using EchoBot.Media;
 using EchoBot.Util;
 using Microsoft.Graph.Communications.Calls;
@@ -51,6 +52,7 @@ namespace EchoBot.Bot
         private List<AudioMediaBuffer> audioMediaBuffers = new List<AudioMediaBuffer>();
         private int shutdown;
         private readonly SpeechService _languageService;
+        private readonly IOpenAIService _openAIService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BotMediaStream" /> class.
@@ -66,7 +68,8 @@ namespace EchoBot.Bot
             string callId,
             IGraphLogger graphLogger,
             ILogger logger,
-            AppSettings settings
+            AppSettings settings,
+            IOpenAIService openAIService
         )
             : base(graphLogger)
         {
@@ -74,6 +77,7 @@ namespace EchoBot.Bot
             ArgumentVerifier.ThrowOnNullArgument(logger, nameof(logger));
             ArgumentVerifier.ThrowOnNullArgument(settings, nameof(settings));
 
+            _openAIService = openAIService;
             _settings = settings;
             _logger = logger;
 
@@ -97,7 +101,7 @@ namespace EchoBot.Bot
 
             if (_settings.UseSpeechService)
             {
-                _languageService = new SpeechService(_settings, _logger);
+                _languageService = new SpeechService(_settings, _logger, _openAIService);
                 _languageService.SendMediaBuffer += this.OnSendMediaBuffer;
             }
         }

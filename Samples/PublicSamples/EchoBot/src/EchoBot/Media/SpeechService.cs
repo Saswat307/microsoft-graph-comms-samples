@@ -1,7 +1,10 @@
-﻿using Microsoft.CognitiveServices.Speech;
+﻿using API.Services.Interfaces;
+using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
 using Microsoft.Skype.Bots.Media;
+using OpenAI.Chat;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace EchoBot.Media
 {
@@ -10,6 +13,10 @@ namespace EchoBot.Media
     /// </summary>
     public class SpeechService
     {
+
+        private string[] employeeNamesSnow = { "Snow", "Snow,", "Sno", "Sno,", "Snoh", "Snoh,", "Snuh", "Snoe" };
+        private string[] employeeNamesMax = { "Max", "Max,", "Max.", "Maks", "Maks,", "Maks.", "Macks", "Macks,", "Macks.", "Mac", "Mac,", "Mac,", "Maxx", "Maxx,", "Maxx.", "Mak", "Mak,", "Mak." };
+
         /// <summary>
         /// The is the indicator if the media stream is running
         /// </summary>
@@ -29,10 +36,18 @@ namespace EchoBot.Media
         private readonly SpeechConfig _speechConfig;
         private SpeechRecognizer _recognizer;
         private readonly SpeechSynthesizer _synthesizer;
+
+        private readonly IOpenAIService _openAIService;
+
+        private StringBuilder recentConversation = new StringBuilder();
+        
+        private List<ChatMessage> meetingConversation = new List<ChatMessage>();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SpeechService" /> class.
-        public SpeechService(AppSettings settings, ILogger logger)
+        public SpeechService(AppSettings settings, ILogger logger, IOpenAIService openAIService)
         {
+            _openAIService = openAIService;
             _logger = logger;
 
             _speechConfig = SpeechConfig.FromSubscription(settings.SpeechConfigKey, settings.SpeechConfigRegion);
@@ -153,7 +168,8 @@ namespace EchoBot.Media
                         _logger.LogInformation($"RECOGNIZED: Text={e.Result.Text}");
                         // We recognized the speech
                         // Now do Speech to Text
-                        await TextToSpeech(e.Result.Text);
+                        await processRecognizedTextAsync(e.Result.Text);
+                     
                     }
                     else if (e.Result.Reason == ResultReason.NoMatch)
                     {
@@ -226,6 +242,49 @@ namespace EchoBot.Media
                     AudioMediaBuffers = Util.Utilities.CreateAudioMediaBuffers(stream, currentTick, _logger)
                 };
                 OnSendMediaBufferEventArgs(this, args);
+            }
+        }
+        private void AppendConversation(string message)
+        {
+            recentConversation.AppendLine(message);
+        }
+
+        private string GetRecentConversation()
+        {
+            return recentConversation.ToString();
+        }
+        private void ClearRecentConversation()
+        {
+            recentConversation.Clear();
+        }
+
+        private async Task processRecognizedTextAsync(string lastMessage)
+        {
+            _logger.LogInformation("Processing Recognize text - " + lastMessage);
+
+            var words = lastMessage.Split(' ');
+            string foundEmployee = words
+                        .FirstOrDefault(word => employeeNamesMax
+                            .Any(employee => word.Equals(employee, StringComparison.OrdinalIgnoreCase)));
+
+            if (!string.IsNullOrEmpty(foundEmployee))
+            {
+                _logger.LogInformation("Employee Name found " + foundEmployee);
+                string question = lastMessage;
+                string recentConversation = GetRecentConversation();
+                ClearRecentConversation();
+                meetingConversation.Add(new UserChatMessage(recentConversation));
+                meetingConversation.Add(new UserChatMessage(question));
+                var response = _openAIService.Ask(meetingConversation);
+
+                meetingConversation.Add(new AssistantChatMessage(response));
+                
+                await TextToSpeech(response);
+            }
+            else
+            {
+                _logger.LogInformation("Employee Name found. Not a question.");
+                AppendConversation(lastMessage);
             }
         }
     }
